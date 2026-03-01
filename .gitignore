@@ -1,0 +1,208 @@
+# Hospital Management System - Git Ignore File
+
+# SENSITIVE FILES - NEVER COMMIT THESE
+
+# Database Configuration (contains passwords)
+includes/config.php
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Database backup files (may contain sensitive data)
+*.sql.backup
+backup/*.sql
+backups/
+
+# UPLOADED FILES & USER DATA
+
+# User uploaded files
+uploads/
+uploads/prescriptions/*
+uploads/invoices/*
+uploads/profile_pictures/*
+
+# Keep the directory structure but ignore contents
+!uploads/.gitkeep
+!uploads/prescriptions/.gitkeep
+!uploads/invoices/.gitkeep
+
+# LOGS & TEMPORARY FILES
+
+# Log files
+*.log
+logs/
+error_log
+access_log
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Cache files
+cache/
+*.cache
+
+# Session files
+sessions/
+*.sess
+
+# OPERATING SYSTEM FILES
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# IDE & EDITOR FILES
+
+# Visual Studio Code
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PhpStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+
+# Eclipse
+.buildpath
+.project
+.settings/
+
+# DEPENDENCIES & PACKAGES
+
+# Composer (PHP package manager)
+vendor/
+composer.lock
+composer.phar
+
+# Node modules (if using npm/node)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Bower
+bower_components/
+
+# BUILD & COMPILED FILES
+
+# Minified files (keep source, ignore compiled)
+*.min.js
+*.min.css
+
+# Build directories
+build/
+dist/
+
+# DEVELOPMENT TOOLS
+
+# PHPUnit
+.phpunit.result.cache
+phpunit.xml
+
+# Testing coverage
+coverage/
+.coverage
+
+# Debug files
+debug.log
+php_errors.log
+
+# BACKUP FILES
+# Backup files created by editors
+*~
+*.swp
+*.swo
+*.bak
+*.orig
+
+# Database dumps (except the initial schema)
+*.sql
+!database.sql
+
+# Backup directories
+.backup/
+old/
+
+# SECURITY & CREDENTIALS
+
+# SSH keys
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+
+# Credentials
+credentials.txt
+passwords.txt
+secrets/
+
+# SSL certificates
+*.crt
+*.csr
+*.der
+*.p12
+*.pfx
+
+# MISC
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Large files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.iso
+
+# Documentation build
+docs/_build/
+
+# Keep important empty directories
+!.gitkeep
