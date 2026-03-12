@@ -186,6 +186,21 @@ CREATE TABLE medical_records (
     FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS doctor_availability (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id       INT          NOT NULL,
+    date            DATE         NOT NULL,
+    is_available    TINYINT(1)   NOT NULL DEFAULT 1,  -- 0 = unavailable, 1 = available
+    reason          TEXT         DEFAULT NULL,        -- reason for unavailability
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_doctor_date (doctor_id, date)
+);
+
+-- Index for faster lookups
+CREATE INDEX idx_doctor_date ON doctor_availability(doctor_id, date);
+
+
 -- ============================================================
 --  DEMO DATA — Sample users for testing
 --  Passwords are all:  password123
