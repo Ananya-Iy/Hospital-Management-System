@@ -33,23 +33,6 @@ while ($row = $presc_result->fetch_assoc()) {
     $prescriptions[] = $row;
 }
 
-// ── Medical Records (uploaded files / notes) ────────────────────────────────
-$records = [];
-$rec_result = $conn->query(
-    "SELECT mr.id, mr.record_type, mr.title, mr.record_date, mr.file_path,
-            u.name AS doctor_name,
-            s.name AS specialization
-     FROM medical_records mr
-     JOIN doctors d  ON mr.doctor_id = d.id
-     JOIN users u    ON d.user_id    = u.id
-     JOIN specializations s ON d.specialization_id = s.id
-     WHERE mr.patient_id = $patient_id
-     ORDER BY mr.record_date DESC"
-);
-while ($row = $rec_result->fetch_assoc()) {
-    $records[] = $row;
-}
-
 // ── Appointment notes (reason + doctor notes) ───────────────────────────────
 $apt_notes = [];
 $apt_result = $conn->query(
@@ -71,7 +54,6 @@ while ($row = $apt_result->fetch_assoc()) {
 
 // ── Counts ──────────────────────────────────────────────────────────────────
 $presc_count   = count($prescriptions);
-$records_count = count($records);
 $notes_count   = count($apt_notes);
 ?>
 <!DOCTYPE html>
@@ -86,19 +68,37 @@ $notes_count   = count($apt_notes);
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
 
         :root {
-            --n1: #F2F2F2; --n2: #E6E6E6; --n3: #DADADA; --n4: #C6C6C6;
-            --n5: #9E9E9E; --n6: #6E6E6E; --n7: #3F3F3F; --n8: #1C1C1C;
-            --maroon-50: #D8C9CE; --maroon-100: #C5A8B3; --maroon-200: #A56C7E;
-            --maroon-300: #842646; --maroon-400: #7A2141; --maroon-500: #641732;
-            --success-light: #C6D8D2; --success-primary: #39C37A; --success-deep: #2E955C;
-            --warning-light: #E5D8C8; --warning-primary: #F48B05; --warning-deep: #B36805;
-            --error-light: #E2D0CD; --error-primary: #F04233; --error-deep: #B03125;
-            --info-light: #C9D3E6; --info-primary: #0E3E9E; --info-deep: #082E73;
+            --n1: #F2F2F2;
+            --n2: #E6E6E6;
+            --n3: #DADADA;
+            --n4: #C6C6C6;
+            --n5: #9E9E9E;
+            --n6: #6E6E6E;
+            --n7: #3F3F3F;
+            --n8: #1C1C1C;
+            --maroon-50: #D8C9CE;
+            --maroon-100: #C5A8B3;
+            --maroon-200: #A56C7E;
+            --maroon-300: #842646;
+            --maroon-400: #7A2141;
+            --maroon-500: #641732;
+            --success-light: #C6D8D2;
+            --success-primary: #39C37A;
+            --success-deep: #2E955C;
+            --warning-light: #E5D8C8;
+            --warning-primary: #F48B05;
+            --warning-deep: #B36805;
+            --error-light: #E2D0CD;
+            --error-primary: #F04233;
+            --error-deep: #B03125;
+            --info-light: #C9D3E6;
+            --info-primary: #0E3E9E;
+            --info-deep: #082E73;
             --bg-body: #F8F9FC;
-            --shadow-sm: 0 4px 8px rgba(0,0,0,0.03);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
             --shadow-md: 0 8px 16px rgba(0,0,0,0.04);
             --shadow-lg: 0 16px 24px rgba(0,0,0,0.04);
-            --shadow-xl: 0 24px 32px rgba(100,23,50,0.08);
+            --shadow-xl: 0 20px 28px rgba(100,23,50,0.08);
         }
 
         html, body { height: 100%; }
@@ -161,7 +161,6 @@ $notes_count   = count($apt_notes);
             background: white;
             border-radius: 100px;
             border: 1px solid var(--n3);
-            box-shadow: var(--shadow-sm);
             transition: all 0.2s;
             color: var(--n8);
         }
@@ -176,17 +175,16 @@ $notes_count   = count($apt_notes);
             border-radius: 100px;
             font-weight: 600;
             color: var(--n7);
-            font-size: 0.9rem;
             transition: all 0.2s;
         }
 
-        .logout-btn:hover { background: var(--n3); }
+        .logout-btn:hover { background: var(--error-light); color: var(--error-deep); }
 
         /* ===== WRAPPER ===== */
         .page-wrapper { flex: 1; display: flex; flex-direction: column; }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             width: 100%;
             margin: 0 auto;
             padding: 2rem;
@@ -201,38 +199,40 @@ $notes_count   = count($apt_notes);
             margin: 1.5rem auto;
             padding: 0.5rem;
             background: white;
-            border-radius: 100px;
+            border-radius: 60px;
             box-shadow: var(--shadow-lg);
-            max-width: 960px;
+            max-width: 900px;
             border: 1px solid var(--n3);
             flex-wrap: wrap;
         }
 
         .tab {
-            padding: 0.75rem 1.5rem;
-            border-radius: 100px;
+            padding: 0.7rem 1.8rem;
+            border-radius: 60px;
             font-weight: 600;
             color: var(--n7);
             transition: all 0.25s;
             display: flex;
             align-items: center;
-            gap: 0.45rem;
-            font-size: 0.92rem;
-            white-space: nowrap;
+            gap: 0.5rem;
+            font-size: 0.9rem;
         }
 
-        .tab i { color: var(--maroon-300); font-size: 0.95rem; transition: color 0.25s; }
-        .tab:hover { background: var(--maroon-50); color: var(--maroon-300); }
-        .tab.active { background: var(--maroon-300); color: white; box-shadow: 0 8px 16px -4px rgba(132,38,70,0.4); }
+        .tab i { color: var(--maroon-300); font-size: 1rem; }
+        .tab:hover { background: var(--maroon-50); color: var(--maroon-300); transform: translateY(-1px); }
+        .tab.active { background: var(--maroon-300); color: white; box-shadow: 0 6px 14px -4px var(--maroon-200); }
         .tab.active i { color: white; }
 
-        /* ===== PAGE HEADER ===== */
-        .page-header { margin-bottom: 2rem; }
+        /* ===== PAGE HEADER (ALIGNED LEFT) ===== */
+        .page-header { 
+            margin-bottom: 2.5rem;
+        }
 
         .page-header h1 {
             font-size: 2.2rem;
             font-weight: 700;
             position: relative;
+            display: inline-block;
             padding-bottom: 0.8rem;
         }
 
@@ -245,69 +245,83 @@ $notes_count   = count($apt_notes);
             border-radius: 4px;
         }
 
-        .page-header p { color: var(--n6); margin-top: 0.8rem; }
+        .page-header p { 
+            color: var(--n6); 
+            margin-top: 1rem;
+            font-size: 1rem;
+        }
 
         /* ===== STATS ===== */
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            display: flex;
             gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
         }
 
         .stat-card {
             background: white;
             border-radius: 24px;
-            padding: 1.5rem;
+            padding: 1.2rem 2rem;
             box-shadow: var(--shadow-md);
             border: 1px solid var(--n3);
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.2rem;
+            min-width: 180px;
             transition: all 0.2s;
         }
 
         .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-xl); }
 
         .stat-icon {
-            width: 58px; height: 58px;
+            width: 52px; height: 52px;
             border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
-            flex-shrink: 0;
+            font-size: 1.5rem;
         }
 
         .stat-icon.blue   { background: var(--info-light);    color: var(--info-primary); }
-        .stat-icon.green  { background: var(--success-light);  color: var(--success-deep); }
         .stat-icon.orange { background: var(--warning-light);  color: var(--warning-deep); }
 
-        .stat-info p  { font-size: 0.85rem; color: var(--n5); margin-bottom: 0.2rem; }
-        .stat-info h3 { font-size: 2rem; font-weight: 700; }
+        .stat-info p  { font-size: 0.8rem; color: var(--n5); margin-bottom: 0.2rem; }
+        .stat-info h3 { font-size: 2rem; font-weight: 700; line-height: 1; }
 
         /* ===== SECTION HEADER ===== */
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 2.5rem 0 1.2rem;
+            margin: 2.5rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--n3);
         }
 
         .section-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 0.6rem;
         }
 
-        .section-header h2 i { color: var(--maroon-300); }
+        .section-header h2 i { color: var(--maroon-300); font-size: 1.4rem; }
+
+        .section-count {
+            background: var(--maroon-50);
+            color: var(--maroon-300);
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
 
         /* ===== RECORDS GRID ===== */
         .records-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 1.5rem;
         }
 
@@ -315,7 +329,7 @@ $notes_count   = count($apt_notes);
         .record-card {
             background: white;
             border-radius: 24px;
-            padding: 1.8rem;
+            padding: 1.5rem;
             box-shadow: var(--shadow-md);
             border: 1px solid var(--n3);
             transition: all 0.25s;
@@ -333,7 +347,6 @@ $notes_count   = count($apt_notes);
         }
 
         .record-card.presc-card::before  { background: linear-gradient(180deg, var(--info-primary), var(--info-deep)); }
-        .record-card.rec-card::before    { background: linear-gradient(180deg, var(--success-primary), var(--success-deep)); }
         .record-card.note-card::before   { background: linear-gradient(180deg, var(--warning-primary), var(--warning-deep)); }
 
         .record-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); border-color: var(--maroon-100); }
@@ -347,31 +360,35 @@ $notes_count   = count($apt_notes);
 
         .card-icon {
             width: 48px; height: 48px;
-            border-radius: 14px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.4rem;
-            flex-shrink: 0;
         }
 
         .card-icon.blue   { background: var(--info-light);    color: var(--info-deep); }
-        .card-icon.green  { background: var(--success-light);  color: var(--success-deep); }
         .card-icon.orange { background: var(--warning-light);  color: var(--warning-deep); }
 
         .card-date {
             background: var(--n1);
-            padding: 0.3rem 0.9rem;
+            padding: 0.3rem 1rem;
             border-radius: 40px;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--n6);
             font-weight: 500;
         }
 
-        .card-title  { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.3rem; }
+        .card-title { 
+            font-weight: 700; 
+            font-size: 1.2rem; 
+            margin-bottom: 0.3rem;
+            color: var(--n8);
+        }
+        
         .card-doctor {
             color: var(--info-primary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
             margin-bottom: 1rem;
             display: flex;
@@ -380,53 +397,39 @@ $notes_count   = count($apt_notes);
         }
 
         /* Medicine items */
-        .medicine-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+        .medicine-list { display: flex; flex-direction: column; gap: 0.6rem; margin: 1rem 0; }
 
         .medicine-item {
             background: var(--n1);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 0.8rem 1rem;
             display: flex;
             align-items: flex-start;
             gap: 0.8rem;
+            transition: all 0.2s;
         }
 
-        .medicine-item i { color: var(--info-primary); margin-top: 0.1rem; flex-shrink: 0; }
-        .med-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; }
-        .med-meta { font-size: 0.82rem; color: var(--n6); }
+        .medicine-item:hover { background: var(--n2); }
+
+        .medicine-item i { color: var(--info-primary); margin-top: 0.2rem; }
+        .med-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem; }
+        .med-meta { font-size: 0.8rem; color: var(--n6); }
 
         /* Diagnosis / notes box */
         .notes-box {
             background: var(--n1);
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 1rem;
-            margin-bottom: 1rem;
-            flex: 1;
+            margin: 1rem 0;
         }
 
         .notes-box p {
             color: var(--n7);
             font-size: 0.9rem;
-            line-height: 1.7;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            line-height: 1.6;
         }
 
-        /* File badge */
-        .file-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: var(--success-light);
-            color: var(--success-deep);
-            padding: 0.3rem 0.9rem;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
+        .notes-box strong { color: var(--maroon-300); }
 
         /* Card footer */
         .card-footer {
@@ -434,41 +437,46 @@ $notes_count   = count($apt_notes);
             justify-content: space-between;
             align-items: center;
             padding-top: 1rem;
-            border-top: 1px solid var(--n2);
             margin-top: auto;
+            border-top: 1px solid var(--n2);
         }
 
-        .view-apt-btn {
+        .med-count {
+            font-size: 0.8rem;
+            color: var(--n5);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .view-btn {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            padding: 0.55rem 1.2rem;
+            padding: 0.5rem 1.2rem;
             background: var(--maroon-300);
             color: white;
             border-radius: 40px;
             font-size: 0.85rem;
             font-weight: 600;
             transition: all 0.2s;
+            border: none;
+            cursor: pointer;
         }
 
-        .view-apt-btn:hover { background: var(--maroon-400); transform: translateY(-1px); }
+        .view-btn:hover { background: var(--maroon-400); transform: translateY(-1px); }
 
-        .record-type-badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: 40px;
-            font-size: 0.78rem;
-            font-weight: 600;
+        .print-btn {
+            background: var(--n2);
+            color: var(--n7);
         }
 
-        .rt-prescription { background: var(--info-light);    color: var(--info-primary); }
-        .rt-labresult    { background: var(--success-light);  color: var(--success-deep); }
-        .rt-imaging      { background: var(--warning-light);  color: var(--warning-deep); }
-        .rt-other        { background: var(--n2);             color: var(--n6); }
+        .print-btn:hover { background: var(--n3); }
 
         /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
-            padding: 3.5rem 2rem;
+            padding: 3rem 2rem;
             background: white;
             border-radius: 24px;
             border: 2px dashed var(--n4);
@@ -479,42 +487,62 @@ $notes_count   = count($apt_notes);
         .empty-state p  { color: var(--n5); }
 
         /* ===== TIMELINE ===== */
-        .timeline-wrap { position: relative; padding-left: 2rem; }
+        .timeline-section {
+            margin-top: 3rem;
+            background: white;
+            border-radius: 28px;
+            padding: 2rem;
+            border: 1px solid var(--n3);
+            box-shadow: var(--shadow-md);
+        }
+
+        .timeline-section .section-header {
+            margin-top: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .timeline-wrap { 
+            position: relative; 
+            padding-left: 2rem;
+            margin-top: 1rem;
+        }
 
         .timeline-wrap::before {
             content: '';
             position: absolute;
             left: 7px; top: 0; bottom: 0;
             width: 2px;
-            background: var(--n3);
+            background: linear-gradient(180deg, var(--maroon-300), var(--info-primary), var(--n3));
         }
 
-        .tl-item { position: relative; padding-bottom: 1.8rem; }
+        .tl-item { position: relative; padding-bottom: 1.5rem; }
 
         .tl-dot {
             position: absolute;
-            left: -2.05rem;
+            left: -2rem;
             top: 4px;
-            width: 16px; height: 16px;
+            width: 14px; height: 14px;
             border-radius: 50%;
             border: 3px solid white;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-sm);
         }
 
         .tl-dot.blue   { background: var(--info-primary); }
-        .tl-dot.green  { background: var(--success-primary); }
         .tl-dot.orange { background: var(--warning-primary); }
 
         .tl-card {
-            background: white;
+            background: var(--n1);
             border-radius: 18px;
-            padding: 1.2rem 1.5rem;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--n3);
+            padding: 1rem 1.5rem;
+            transition: all 0.2s;
         }
 
-        .tl-date  { font-size: 0.82rem; color: var(--n5); margin-bottom: 0.3rem; }
-        .tl-title { font-weight: 700; font-size: 0.95rem; }
+        .tl-card:hover { background: white; box-shadow: var(--shadow-sm); }
+
+        .tl-date  { font-size: 0.8rem; color: var(--n5); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.3rem; }
+        .tl-title { font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+        .tl-title i { color: var(--maroon-300); }
 
         /* ===== FOOTER ===== */
         footer {
@@ -533,8 +561,10 @@ $notes_count   = count($apt_notes);
             nav { flex-direction: column; gap: 0.8rem; padding: 1rem; }
             .container { padding: 1rem; }
             .main-tabs { border-radius: 24px; padding: 0.6rem; }
-            .tab { padding: 0.6rem 1rem; font-size: 0.85rem; }
+            .tab { padding: 0.5rem 1rem; font-size: 0.8rem; }
             .records-grid { grid-template-columns: 1fr; }
+            .stats-grid { gap: 1rem; }
+            .stat-card { padding: 1rem 1.5rem; min-width: auto; }
         }
     </style>
 </head>
@@ -543,13 +573,13 @@ $notes_count   = count($apt_notes);
 <!-- HEADER -->
 <header>
     <nav>
-        <a href="../../index.php" class="logo">Valora</a>
+        <a href="patient-dashboard.php" class="logo">Valora</a> 
         <div class="nav-right">
             <a href="profile.php" class="user-profile">
                 <i class="fas fa-user-circle"></i>
                 <span><?php echo htmlspecialchars($_SESSION['name']); ?></span>
             </a>
-            <a href="../../logout.php" class="logout-btn">
+            <a href="../logout.php" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>
@@ -558,21 +588,21 @@ $notes_count   = count($apt_notes);
 
 <div class="page-wrapper">
 
-    <!-- TABS -->
+   <!-- TABS -->
     <div class="main-tabs">
         <a href="appointments.php"         class="tab"><i class="fas fa-calendar-plus"></i> Book Appointment</a>
         <a href="myappointments.php" class="tab"><i class="fas fa-calendar-alt"></i> My Appointments</a>
         <a href="finddoc.php"      class="tab"><i class="fas fa-user-md"></i> Find Doctors</a>
         <a href="reports.php"      class="tab active"><i class="fas fa-file-medical"></i> Medical Records</a>
         <a href="billings.php"      class="tab"><i class="fas fa-file-invoice"></i> Billing</a>
-        <a href="profile.php"      class="tab"><i class="fas fa-user"></i> Profile</a>
+        <a href="profile.php"      class="tab "><i class="fas fa-user"></i> Profile</a>
     </div>
-
     <div class="container">
 
+        <!-- PAGE HEADER (ALIGNED LEFT) -->
         <div class="page-header">
             <h1>Medical Records</h1>
-            <p>Your prescriptions, uploaded records, and doctor's notes in one place</p>
+            <p>Your complete health history at a glance</p>
         </div>
 
         <!-- STATS -->
@@ -582,13 +612,6 @@ $notes_count   = count($apt_notes);
                 <div class="stat-info">
                     <p>Prescriptions</p>
                     <h3><?php echo $presc_count; ?></h3>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-folder-open"></i></div>
-                <div class="stat-info">
-                    <p>Uploaded Records</p>
-                    <h3><?php echo $records_count; ?></h3>
                 </div>
             </div>
             <div class="stat-card">
@@ -603,6 +626,9 @@ $notes_count   = count($apt_notes);
         <!-- ── PRESCRIPTIONS ─────────────────────────────────────────── -->
         <div class="section-header">
             <h2><i class="fas fa-prescription"></i> Prescriptions</h2>
+            <?php if ($presc_count > 0): ?>
+                <span class="section-count"><?php echo $presc_count; ?> records</span>
+            <?php endif; ?>
         </div>
 
         <?php if ($presc_count > 0): ?>
@@ -616,12 +642,12 @@ $notes_count   = count($apt_notes);
                 <div class="card-title">Prescription</div>
                 <div class="card-doctor">
                     <i class="fas fa-user-md"></i>
-                    Dr. <?php echo htmlspecialchars($p['doctor_name']); ?> &middot; <?php echo htmlspecialchars($p['specialization']); ?>
+                    Dr. <?php echo htmlspecialchars($p['doctor_name']); ?> · <?php echo htmlspecialchars($p['specialization']); ?>
                 </div>
 
                 <?php if (!empty($p['diagnosis'])): ?>
-                <div class="notes-box" style="margin-bottom:0.8rem;">
-                    <p><strong>Diagnosis:</strong> <?php echo htmlspecialchars($p['diagnosis']); ?></p>
+                <div class="notes-box">
+                    <p><strong><i class="fas fa-stethoscope"></i> Diagnosis:</strong> <?php echo htmlspecialchars($p['diagnosis']); ?></p>
                 </div>
                 <?php endif; ?>
 
@@ -633,9 +659,9 @@ $notes_count   = count($apt_notes);
                         <div>
                             <div class="med-name"><?php echo htmlspecialchars($item['medicine_name']); ?></div>
                             <div class="med-meta">
-                                <?php if ($item['dosage']):    echo htmlspecialchars($item['dosage'])    . ' &nbsp;'; endif; ?>
-                                <?php if ($item['frequency']): echo htmlspecialchars($item['frequency']) . ' &nbsp;'; endif; ?>
-                                <?php if ($item['duration']):  echo htmlspecialchars($item['duration']);                endif; ?>
+                                <?php if ($item['dosage']):    echo htmlspecialchars($item['dosage']) . ' · '; endif; ?>
+                                <?php if ($item['frequency']): echo htmlspecialchars($item['frequency']) . ' · '; endif; ?>
+                                <?php if ($item['duration']):  echo htmlspecialchars($item['duration']); endif; ?>
                             </div>
                         </div>
                     </div>
@@ -645,20 +671,19 @@ $notes_count   = count($apt_notes);
 
                 <?php if (!empty($p['notes'])): ?>
                 <div class="notes-box">
-                    <p><?php echo nl2br(htmlspecialchars($p['notes'])); ?></p>
+                    <p><strong><i class="fas fa-comment-medical"></i> Notes:</strong> <?php echo nl2br(htmlspecialchars($p['notes'])); ?></p>
                 </div>
                 <?php endif; ?>
 
                 <div class="card-footer">
-                    <span style="font-size:0.85rem; color:var(--n5);"><i class="fas fa-pills"></i> <?php echo count($p['items']); ?> medication(s)</span>
-                    <button onclick="window.print()" class="view-apt-btn">
+                    <span class="med-count"><i class="fas fa-pills"></i> <?php echo count($p['items']); ?> medication(s)</span>
+                    <button onclick="window.print()" class="view-btn print-btn">
                         <i class="fas fa-print"></i> Print
                     </button>
                 </div>
             </div>
             <?php endforeach; ?>
         </div>
-
         <?php else: ?>
         <div class="empty-state">
             <i class="fas fa-prescription"></i>
@@ -667,65 +692,12 @@ $notes_count   = count($apt_notes);
         </div>
         <?php endif; ?>
 
-        <!-- ── UPLOADED RECORDS ──────────────────────────────────────── -->
-        <div class="section-header">
-            <h2><i class="fas fa-folder-open"></i> Uploaded Records</h2>
-        </div>
-
-        <?php if ($records_count > 0): ?>
-        <div class="records-grid">
-            <?php foreach ($records as $r): ?>
-            <?php
-                $rt_class = match(strtolower($r['record_type'] ?? '')) {
-                    'lab result', 'lab'  => 'rt-labresult',
-                    'imaging', 'x-ray'  => 'rt-imaging',
-                    'prescription'      => 'rt-prescription',
-                    default             => 'rt-other'
-                };
-            ?>
-            <div class="record-card rec-card">
-                <div class="card-top">
-                    <div class="card-icon green"><i class="fas fa-file-medical-alt"></i></div>
-                    <span class="card-date"><?php echo date('M d, Y', strtotime($r['record_date'])); ?></span>
-                </div>
-                <div class="card-title"><?php echo htmlspecialchars($r['title']); ?></div>
-                <div class="card-doctor">
-                    <i class="fas fa-user-md"></i>
-                    Dr. <?php echo htmlspecialchars($r['doctor_name']); ?> &middot; <?php echo htmlspecialchars($r['specialization']); ?>
-                </div>
-                <span class="record-type-badge <?php echo $rt_class; ?>" style="margin-bottom:1rem; display:inline-block;">
-                    <?php echo htmlspecialchars($r['record_type'] ?? 'Record'); ?>
-                </span>
-
-                <?php if (!empty($r['file_path'])): ?>
-                <div class="file-badge">
-                    <i class="fas fa-paperclip"></i> File attached
-                </div>
-                <?php endif; ?>
-
-                <div class="card-footer" style="margin-top:auto;">
-                    <span></span>
-                    <?php if (!empty($r['file_path'])): ?>
-                    <a href="<?php echo htmlspecialchars($r['file_path']); ?>" target="_blank" class="view-apt-btn">
-                        <i class="fas fa-eye"></i> View File
-                    </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-
-        <?php else: ?>
-        <div class="empty-state">
-            <i class="fas fa-folder-open"></i>
-            <h3>No uploaded records yet</h3>
-            <p>Lab results, imaging and other records uploaded by your doctor will appear here</p>
-        </div>
-        <?php endif; ?>
-
         <!-- ── DOCTOR'S NOTES ────────────────────────────────────────── -->
         <div class="section-header">
             <h2><i class="fas fa-notes-medical"></i> Doctor's Notes</h2>
+            <?php if ($notes_count > 0): ?>
+                <span class="section-count"><?php echo $notes_count; ?> records</span>
+            <?php endif; ?>
         </div>
 
         <?php if ($notes_count > 0): ?>
@@ -739,29 +711,28 @@ $notes_count   = count($apt_notes);
                 <div class="card-title">Consultation Notes</div>
                 <div class="card-doctor">
                     <i class="fas fa-user-md"></i>
-                    Dr. <?php echo htmlspecialchars($n['doctor_name']); ?> &middot; <?php echo htmlspecialchars($n['specialization']); ?>
-                </div>
-
-                <div class="notes-box">
-                    <p><?php echo nl2br(htmlspecialchars($n['notes'])); ?></p>
+                    Dr. <?php echo htmlspecialchars($n['doctor_name']); ?> · <?php echo htmlspecialchars($n['specialization']); ?>
                 </div>
 
                 <?php if (!empty($n['reason'])): ?>
-                <div class="notes-box" style="background: var(--maroon-50);">
-                    <p><strong>Reason for visit:</strong> <?php echo nl2br(htmlspecialchars($n['reason'])); ?></p>
+                <div class="notes-box">
+                    <p><strong><i class="fas fa-question-circle"></i> Reason for Visit:</strong> <?php echo nl2br(htmlspecialchars($n['reason'])); ?></p>
                 </div>
                 <?php endif; ?>
 
+                <div class="notes-box">
+                    <p><strong><i class="fas fa-stethoscope"></i> Doctor's Notes:</strong> <?php echo nl2br(htmlspecialchars($n['notes'])); ?></p>
+                </div>
+
                 <div class="card-footer">
-                    <span></span>
-                    <a href="appointment-details.php?id=<?php echo $n['id']; ?>" class="view-apt-btn">
-                        <i class="fas fa-eye"></i> View Appointment
+                    <span class="med-count"><i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($n['appointment_date'])); ?></span>
+                    <a href="appointment-details.php?id=<?php echo $n['id']; ?>" class="view-btn">
+                        <i class="fas fa-eye"></i> View Details
                     </a>
                 </div>
             </div>
             <?php endforeach; ?>
         </div>
-
         <?php else: ?>
         <div class="empty-state">
             <i class="fas fa-notes-medical"></i>
@@ -774,35 +745,34 @@ $notes_count   = count($apt_notes);
         <?php
         $timeline = [];
         foreach ($prescriptions as $p) {
-            $timeline[] = ['date' => $p['issued_date'],    'label' => 'Prescription from Dr. ' . $p['doctor_name'], 'color' => 'blue',   'icon' => 'fa-prescription'];
-        }
-        foreach ($records as $r) {
-            $timeline[] = ['date' => $r['record_date'],    'label' => $r['title'],                                  'color' => 'green',  'icon' => 'fa-file-medical-alt'];
+            $timeline[] = ['date' => $p['issued_date'], 'label' => 'Prescription from Dr. ' . $p['doctor_name'], 'color' => 'blue', 'icon' => 'fa-prescription-bottle'];
         }
         foreach ($apt_notes as $n) {
-            $timeline[] = ['date' => $n['appointment_date'], 'label' => 'Consultation – Dr. ' . $n['doctor_name'],  'color' => 'orange', 'icon' => 'fa-notes-medical'];
+            $timeline[] = ['date' => $n['appointment_date'], 'label' => 'Consultation with Dr. ' . $n['doctor_name'], 'color' => 'orange', 'icon' => 'fa-stethoscope'];
         }
         usort($timeline, fn($a,$b) => strtotime($b['date']) - strtotime($a['date']));
-        $timeline = array_slice($timeline, 0, 6);
+        $timeline = array_slice($timeline, 0, 5);
         ?>
 
         <?php if (!empty($timeline)): ?>
-        <div class="section-header" style="margin-top:3rem;">
-            <h2><i class="fas fa-history"></i> Recent Activity</h2>
-        </div>
-        <div class="timeline-wrap">
-            <?php foreach ($timeline as $t): ?>
-            <div class="tl-item">
-                <div class="tl-dot <?php echo $t['color']; ?>"></div>
-                <div class="tl-card">
-                    <div class="tl-date"><i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($t['date'])); ?></div>
-                    <div class="tl-title">
-                        <i class="fas <?php echo $t['icon']; ?>" style="color:var(--maroon-300); margin-right:0.4rem;"></i>
-                        <?php echo htmlspecialchars($t['label']); ?>
+        <div class="timeline-section">
+            <div class="section-header">
+                <h2><i class="fas fa-history"></i> Recent Activity</h2>
+            </div>
+            <div class="timeline-wrap">
+                <?php foreach ($timeline as $t): ?>
+                <div class="tl-item">
+                    <div class="tl-dot <?php echo $t['color']; ?>"></div>
+                    <div class="tl-card">
+                        <div class="tl-date"><i class="fas fa-calendar-alt"></i> <?php echo date('M d, Y', strtotime($t['date'])); ?></div>
+                        <div class="tl-title">
+                            <i class="fas <?php echo $t['icon']; ?>"></i>
+                            <?php echo htmlspecialchars($t['label']); ?>
+                        </div>
                     </div>
                 </div>
+                <?php endforeach; ?>
             </div>
-            <?php endforeach; ?>
         </div>
         <?php endif; ?>
 

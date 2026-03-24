@@ -373,14 +373,14 @@ if ($doctor_id) {
 <!-- ===== HEADER ===== -->
 <header>
     <nav>
-        <a href="../../index.php" class="logo">Valora</a>
+       <a href="dashboard-doctor.php" class="logo">Valora</a>
         <div class="nav-right">
             <a href="profile.php" class="user-profile">
                 <i class="fas fa-user-md"></i>
                 <span>Dr. <?php echo htmlspecialchars($doctor_name); ?></span>
                 <i class="fas fa-chevron-down"></i>
             </a>
-            <a href="../../logout.php" class="logout-btn">
+            <a href="../logout.php" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>

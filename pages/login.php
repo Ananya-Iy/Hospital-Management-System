@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             switch ($user['role']) {
                 case 'patient':      header('Location: patient/patient-dashboard.php'); exit;
                 case 'doctor':       header('Location: doctor/dashboard-doctor.php');   exit;
-                case 'receptionist': header('Location: receptionist/dashboard-receptionist.php'); exit;
+                case 'receptionist': header('Location: receptionist/receptionist-dashboard.php'); exit;
                 case 'admin':        header('Location: admin/dashboard.php'); exit;
                 default:             header('Location: ../index.php'); exit;
             }
