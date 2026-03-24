@@ -539,10 +539,10 @@ $all_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 <!-- ===== HEADER ===== -->
 <header>
     <nav>
-        <a href="../../index.php" class="logo">Valora</a>
+      <a href="dashboard-doctor.php" class="logo">Valora</a>
         <ul class="nav-links">
             <li><a href="doctor-dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="../../logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="../logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </nav>
 </header>

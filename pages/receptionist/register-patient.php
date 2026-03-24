@@ -137,10 +137,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <header>
     <nav>
-        <a href="../../index.php" class="logo">Valora</a>
+     <a href="receptionist-dashboard.php" class="logo">Valora</a>
         <ul class="nav-links">
             <li><a href="receptionist-dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="../../logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="../logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </nav>
 </header>

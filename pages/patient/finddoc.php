@@ -576,13 +576,13 @@ while ($row = $spec_result->fetch_assoc()) {
 <!-- ===== HEADER ===== -->
 <header>
     <nav>
-        <a href="../../index.php" class="logo">Valora</a>
+       <a href="patient-dashboard.php" class="logo">Valora</a> 
         <div class="nav-right">
             <a href="profile.php" class="user-profile">
                 <i class="fas fa-user-circle"></i>
                 <span><?php echo htmlspecialchars($_SESSION['name']); ?></span>
             </a>
-            <a href="../../logout.php" class="logout-btn">
+            <a href="../logout.php" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>

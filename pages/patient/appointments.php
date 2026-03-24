@@ -533,10 +533,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- ===== HEADER ===== -->
 <header>
     <nav>
-        <a href="../../index.php" class="logo">Valora</a>
+       <a href="patient-dashboard.php" class="logo">Valora</a> 
         <ul class="nav-links">
-            <li><a href="patient-dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="../../logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+           
+            <li><a href="../logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </nav>
 </header>
@@ -577,13 +577,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Appointment Booked!</h3>
             <p><?php echo htmlspecialchars($success); ?></p>
             <div class="btn-row" style="max-width: 500px; margin: 0 auto;">
-                <a href="billing.php" class="btn btn-primary">
+                <a href="billings.php" class="btn btn-primary">
                     <i class="fas fa-credit-card"></i> Pay Now
                 </a>
-                <a href="appointments.php" class="btn btn-secondary">
+                <a href="myappointments.php" class="btn btn-secondary">
                     <i class="fas fa-calendar-alt"></i> My Appointments
                 </a>
-                <a href="home.php" class="btn btn-secondary">
+                <a href="appointments.php" class="btn btn-secondary">
                     <i class="fas fa-plus"></i> Book Another
                 </a>
             </div>
@@ -665,22 +665,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label><i class="fas fa-calendar-day"></i> Appointment Date</label>
                     <input type="date" name="appointment_date" class="form-control"
-                           min="<?php echo date('Y-m-d'); ?>" required>
+                           min="<?php echo date('Y-m-d'); ?>" required id="appointmentDateInput"
+                           onchange="loadSlots()">
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-clock"></i> Preferred Time Slot</label>
-                    <select name="appointment_time" class="form-control" required>
-                        <option value="">Select a time slot</option>
-                        <option value="09:00">🕘 9:00 AM</option>
-                        <option value="10:00">🕙 10:00 AM</option>
-                        <option value="11:00">🕚 11:00 AM</option>
-                        <option value="12:00">🕛 12:00 PM</option>
-                        <option value="14:00">🕑 2:00 PM</option>
-                        <option value="15:00">🕒 3:00 PM</option>
-                        <option value="16:00">🕓 4:00 PM</option>
-                        <option value="17:00">🕔 5:00 PM</option>
+                    <label><i class="fas fa-clock"></i> Preferred Time Slot <span style="color:var(--n5);font-weight:400;font-size:.85rem">(30 min consultations)</span></label>
+                    <select name="appointment_time" class="form-control" required id="timeSlotSelect">
+                        <option value="">Select a date first</option>
                     </select>
+                    <p id="slotNote" style="font-size:.85rem;color:var(--n5);margin-top:.5rem;display:none">
+                        <i class="fas fa-info-circle"></i> Showing available slots · <span style="color:var(--ed)">🔒 Booked</span> slots cannot be selected.
+                    </p>
                 </div>
 
                 <div class="btn-row">
@@ -775,8 +771,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('selected'));
             this.classList.add('selected');
             this.querySelector('input[type="radio"]').checked = true;
+            // Reset slots when doctor changes
+            const sel = document.getElementById('timeSlotSelect');
+            sel.innerHTML = '<option value="">Select a date first</option>';
+            document.getElementById('slotNote').style.display = 'none';
+            const di = document.getElementById('appointmentDateInput');
+            if (di && di.value) loadSlots();
         });
     });
+
+    // ===== DYNAMIC TIME SLOTS =====
+    function loadSlots() {
+        const dateVal   = document.getElementById('appointmentDateInput').value;
+        const docRadio  = document.querySelector('input[name="doctor_id"]:checked');
+        const sel       = document.getElementById('timeSlotSelect');
+        const note      = document.getElementById('slotNote');
+
+        if (!dateVal || !docRadio) {
+            sel.innerHTML = '<option value="">Select a doctor first</option>';
+            return;
+        }
+
+        sel.innerHTML = '<option value="">Loading available slots...</option>';
+        sel.disabled = true;
+
+        fetch(`get-slots.php?doctor_id=${docRadio.value}&date=${dateVal}`)
+            .then(r => r.json())
+            .then(data => {
+                sel.disabled = false;
+                if (data.error) {
+                    sel.innerHTML = `<option value="">${data.error}</option>`;
+                    note.style.display = 'none';
+                } else if (data.slots.length === 0) {
+                    sel.innerHTML = '<option value="">No available slots on this date</option>';
+                    note.style.display = 'none';
+                } else {
+                    sel.innerHTML = '<option value="">-- Select a time slot --</option>';
+                    data.slots.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.value;
+                        opt.textContent = s.label; // already "9:00 AM – 9:30 AM"
+                        sel.appendChild(opt);
+                    });
+                    note.style.display = 'block';
+                    note.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success-primary)"></i> ${data.slots.length} slot${data.slots.length !== 1 ? 's' : ''} available — booked slots are hidden.`;
+                }
+            })
+            .catch(() => {
+                sel.disabled = false;
+                sel.innerHTML = '<option value="">Could not load slots. Try again.</option>';
+            });
+    }
 </script>
 </body>
 </html>
