@@ -718,8 +718,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <footer>
     <div class="footer-content">
         <p style="font-size:1.1rem; font-weight:600;">Valora Medical Center</p>
-        <p style="color:var(--n4); font-size:0.9rem;">University Project · All information is fictional</p>
-        <p class="footer-copy">&copy; 2026 Valora HMS. All rights reserved.</p>
+        <p style="color:var(--n4); font-size:0.9rem;">This is a university project for educational purposes; all hospital information & services is  fictional.</p>
+        <p class="footer-copy">&copy; 2026</p>
     </div>
 </footer>
 

@@ -377,7 +377,7 @@
 <footer>
     <p style="font-size:1.2rem; margin-bottom:0.5rem;">Valora Medical Center</p>
     <p style="color:var(--n4);">This is a university project for educational purposes; all hospital information & services is  fictional.</p>
-    <p style="margin-top:2rem;">&copy; 2026 – efficient, always ready.</p>
+    <p style="margin-top:2rem;">&copy; 2026</p>
 </footer>
 
 <script src="js/main.js"></script>

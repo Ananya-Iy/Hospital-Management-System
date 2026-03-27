@@ -9,8 +9,8 @@ $error   = '';
 // ── Handle payment processing ─────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_payment'])) {
     $invoice_id     = intval($_POST['invoice_id']);
-    $payment_method = sanitize($_POST['payment_method']);
     $paid_amount    = floatval($_POST['paid_amount']);
+    $payment_method = 'Cash'; // Always cash
 
     $inv = $conn->query("SELECT * FROM invoices WHERE id = $invoice_id")->fetch_assoc();
 
@@ -30,43 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_payment'])) {
             $error = 'Failed to process payment.';
         }
         $stmt->close();
-    }
-}
-
-// ── Handle generate invoice ───────────────────────────────────────────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_invoice'])) {
-    $apt_id          = intval($_POST['apt_id']);
-    $extra_charges   = floatval($_POST['extra_charges'] ?? 0);
-    $notes           = sanitize($_POST['notes'] ?? '');
-
-    // Check if invoice already exists
-    $existing = $conn->query("SELECT id FROM invoices WHERE appointment_id = $apt_id")->fetch_assoc();
-    if ($existing) {
-        $error = 'An invoice already exists for this appointment.';
-    } else {
-        $apt = $conn->query(
-            "SELECT a.patient_id, d.consultation_fee, a.appointment_date
-             FROM appointments a JOIN doctors d ON a.doctor_id = d.id
-             WHERE a.id = $apt_id"
-        )->fetch_assoc();
-
-        if ($apt) {
-            $total      = $apt['consultation_fee'] + $extra_charges;
-            $inv_number = 'INV-' . str_pad($apt_id, 5, '0', STR_PAD_LEFT);
-            $due_date   = $apt['appointment_date'];
-
-            $stmt = $conn->prepare(
-                "INSERT INTO invoices (patient_id, appointment_id, invoice_number, total_amount, paid_amount, status, due_date, notes)
-                 VALUES (?, ?, ?, ?, 0.00, 'Unpaid', ?, ?)"
-            );
-            $stmt->bind_param("iidsss", $apt['patient_id'], $apt_id, $inv_number, $total, $due_date, $notes);
-            if ($stmt->execute()) {
-                header("Location: billing-receptionist.php?generated=1"); exit;
-            } else {
-                $error = 'Failed to generate invoice.';
-            }
-            $stmt->close();
-        }
     }
 }
 
@@ -100,24 +63,6 @@ $today_rev  = $conn->query("SELECT COALESCE(SUM(paid_amount),0) as t FROM invoic
 $total_unpaid = $conn->query("SELECT COALESCE(SUM(total_amount),0) as t FROM invoices WHERE status='Unpaid'")->fetch_assoc()['t'];
 $total_paid   = $conn->query("SELECT COALESCE(SUM(paid_amount),0) as t FROM invoices WHERE status='Paid'")->fetch_assoc()['t'];
 $total_inv    = $conn->query("SELECT COUNT(*) as c FROM invoices")->fetch_assoc()['c'];
-
-// Appointments without invoices (for generate invoice form)
-$no_invoice_apts = [];
-$nia_res = $conn->query(
-    "SELECT a.id, a.appointment_date, a.appointment_time, u.name AS patient_name, du.name AS doctor_name, d.consultation_fee
-     FROM appointments a
-     JOIN patients p  ON a.patient_id = p.id
-     JOIN users u     ON p.user_id    = u.id
-     JOIN doctors d   ON a.doctor_id  = d.id
-     JOIN users du    ON d.user_id    = du.id
-     WHERE a.id NOT IN (SELECT appointment_id FROM invoices WHERE appointment_id IS NOT NULL)
-     AND a.status != 'Cancelled'
-     ORDER BY a.appointment_date DESC LIMIT 50"
-);
-while ($r = $nia_res->fetch_assoc()) $no_invoice_apts[] = $r;
-
-// Pre-select appointment if coming from check-in
-$preselect_apt = intval($_GET['apt_id'] ?? 0);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -208,8 +153,6 @@ $preselect_apt = intval($_GET['apt_id'] ?? 0);
         .btn-sm{padding:.4rem .9rem;border-radius:40px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:.3rem}
         .btn-pay{background:var(--sp);color:white}
         .btn-pay:hover{background:var(--sd)}
-        .btn-print{background:var(--il);color:var(--ip)}
-        .btn-print:hover{background:var(--ip);color:white}
 
         .empty{text-align:center;padding:3rem 2rem}
         .empty i{font-size:3rem;color:var(--n4);display:block;margin-bottom:.8rem}
@@ -273,14 +216,10 @@ $preselect_apt = intval($_GET['apt_id'] ?? 0);
     <div class="container">
 
         <?php if (isset($_GET['paid'])):      ?><div class="alert alert-success"><i class="fas fa-check-circle"></i> Payment recorded successfully.</div><?php endif; ?>
-        <?php if (isset($_GET['generated'])): ?><div class="alert alert-success"><i class="fas fa-check-circle"></i> Invoice generated successfully.</div><?php endif; ?>
         <?php if ($error): ?><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <?php echo $error; ?></div><?php endif; ?>
 
         <div class="page-header">
             <h1>Billing & Payments</h1>
-            <button class="btn-primary" onclick="document.getElementById('genModal').classList.add('active')">
-                <i class="fas fa-plus"></i> Generate Invoice
-            </button>
         </div>
 
         <!-- STATS -->
@@ -303,7 +242,7 @@ $preselect_apt = intval($_GET['apt_id'] ?? 0);
             <?php if (count($invoices) > 0): ?>
             <table class="data-table">
                 <thead>
-                    <tr><th>Invoice</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Total</th><th>Paid</th><th>Status</th><th>Method</th><th>Actions</th></tr>
+                    <tr><th>Invoice</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Total</th><th>Paid</th><th>Status</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($invoices as $inv): ?>
@@ -315,7 +254,6 @@ $preselect_apt = intval($_GET['apt_id'] ?? 0);
                         <td><strong>BD <?php echo number_format($inv['total_amount'], 2); ?></strong></td>
                         <td>BD <?php echo number_format($inv['paid_amount'], 2); ?></td>
                         <td><span class="badge b-<?php echo strtolower($inv['status']); ?>"><?php echo $inv['status']; ?></span></td>
-                        <td><?php echo htmlspecialchars($inv['payment_method'] ?? '—'); ?></td>
                         <td style="white-space:nowrap">
                             <?php if ($inv['status'] !== 'Paid'): ?>
                             <button class="btn-sm btn-pay"
@@ -323,9 +261,6 @@ $preselect_apt = intval($_GET['apt_id'] ?? 0);
                                 <i class="fas fa-credit-card"></i> Pay
                             </button>
                             <?php endif; ?>
-                            <button class="btn-sm btn-print" onclick="printInvoice(<?php echo $inv['id']; ?>)">
-                                <i class="fas fa-print"></i> Print
-                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -348,15 +283,6 @@ $preselect_apt = intval($_GET['apt_id'] ?? 0);
         <form method="POST">
             <input type="hidden" name="invoice_id" id="payInvId">
             <div class="fg">
-                <label>Payment Method</label>
-                <select name="payment_method" class="fc" required>
-                    <option value="Cash">Cash</option>
-                    <option value="Card">Card</option>
-                    <option value="Insurance">Insurance</option>
-                    <option value="Online">Online</option>
-                </select>
-            </div>
-            <div class="fg">
                 <label>Amount Paid (BD)</label>
                 <input type="number" name="paid_amount" id="payAmount" class="fc" step="0.01" min="0" required>
             </div>
@@ -368,57 +294,11 @@ $preselect_apt = intval($_GET['apt_id'] ?? 0);
     </div>
 </div>
 
-<!-- GENERATE INVOICE MODAL -->
-<div id="genModal" class="modal">
-    <div class="modal-box">
-        <i class="fas fa-times modal-close" onclick="document.getElementById('genModal').classList.remove('active')"></i>
-        <div class="modal-title">Generate Invoice</div>
-        <div class="modal-sub">Create invoice for an appointment that doesn't have one yet.</div>
-        <form method="POST">
-            <div class="fg">
-                <label>Appointment</label>
-                <select name="apt_id" class="fc" required id="aptSelect" onchange="updateFee(this)">
-                    <option value="">Select appointment...</option>
-                    <?php foreach ($no_invoice_apts as $a): ?>
-                    <option value="<?php echo $a['id']; ?>"
-                            data-fee="<?php echo $a['consultation_fee']; ?>"
-                            <?php echo ($preselect_apt === $a['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($a['patient_name']); ?> →
-                        Dr. <?php echo htmlspecialchars($a['doctor_name']); ?> |
-                        <?php echo date('M d, Y', strtotime($a['appointment_date'])); ?> <?php echo date('h:i A', strtotime($a['appointment_time'])); ?>
-                    </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="fg">
-                <label>Consultation Fee (BD) — auto-filled</label>
-                <input type="text" id="consultFee" class="fc" readonly style="background:var(--n2);color:var(--n6)">
-            </div>
-            <div class="fg">
-                <label>Additional Charges (BD) <span style="color:var(--n5);font-weight:400">(optional)</span></label>
-                <input type="number" name="extra_charges" class="fc" step="0.01" min="0" value="0" id="extraCharges" oninput="calcTotal()">
-            </div>
-            <div class="fg">
-                <label>Total (BD)</label>
-                <input type="text" id="totalDisplay" class="fc" readonly style="background:var(--n2);color:var(--n6);font-weight:700">
-            </div>
-            <div class="fg">
-                <label>Notes <span style="color:var(--n5);font-weight:400">(optional)</span></label>
-                <input type="text" name="notes" class="fc" placeholder="e.g. Follow-up required">
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="mbtn mbtn-secondary" onclick="document.getElementById('genModal').classList.remove('active')">Cancel</button>
-                <button type="submit" name="generate_invoice" class="mbtn mbtn-primary"><i class="fas fa-file-invoice"></i> Generate</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <footer>
     <div class="footer-content">
         <p style="font-size:1.1rem;font-weight:600">Valora Medical Center</p>
-        <p style="color:var(--n4);font-size:.9rem">University Project · All information is fictional</p>
-        <p class="footer-copy">&copy; 2026 Valora HMS. All rights reserved.</p>
+        <p style="color:var(--n4);font-size:.9rem">This is a university project for educational purposes; all hospital information & services is  fictional.</p>
+        <p class="footer-copy">&copy; 2026 </p>
     </div>
 </footer>
 
@@ -430,35 +310,9 @@ function openPayment(id, total, paid, name) {
     document.getElementById('payModal').classList.add('active');
 }
 
-function updateFee(sel) {
-    const fee = parseFloat(sel.options[sel.selectedIndex].dataset.fee || 0);
-    document.getElementById('consultFee').value  = fee.toFixed(2);
-    document.getElementById('extraCharges').value = '0';
-    document.getElementById('totalDisplay').value = fee.toFixed(2);
-}
-
-function calcTotal() {
-    const fee   = parseFloat(document.getElementById('consultFee').value  || 0);
-    const extra = parseFloat(document.getElementById('extraCharges').value || 0);
-    document.getElementById('totalDisplay').value = (fee + extra).toFixed(2);
-}
-
-function printInvoice(id) {
-    window.open('print-invoice.php?id=' + id, '_blank', 'width=800,height=600');
-}
-
 document.querySelectorAll('.modal').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
 });
-
-// Auto-open generate modal if coming from check-in with apt_id
-<?php if ($preselect_apt): ?>
-document.getElementById('genModal').classList.add('active');
-updateFee(document.getElementById('aptSelect'));
-<?php endif; ?>
-<?php if (isset($_GET['tab']) && $_GET['tab'] === 'payments'): ?>
-// scroll to table — already visible
-<?php endif; ?>
 </script>
 
 </body>
