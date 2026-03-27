@@ -39,12 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Insert into role-specific table
                 if ($role === 'patient') {
-                    $dob     = $_POST['date_of_birth'] ?? '';
-                    $gender  = $_POST['gender']        ?? '';
-                    $address = trim($_POST['address']   ?? '');
+                    $dob                      = $_POST['date_of_birth'] ?? '';
+                    $gender                   = $_POST['gender']        ?? '';
+                    $blood_group              = $_POST['blood_group']   ?? '';
+                    $emergency_contact_phone  = trim($_POST['emergency_contact_phone'] ?? '');
+                    $address                  = trim($_POST['address']   ?? '');
 
-                    $p = $conn->prepare("INSERT INTO patients (user_id, date_of_birth, gender, address) VALUES (?, ?, ?, ?)");
-                    $p->bind_param("isss", $user_id, $dob, $gender, $address);
+                    $p = $conn->prepare("INSERT INTO patients (user_id, date_of_birth, gender, blood_group, address, emergency_contact_phone) VALUES (?, ?, ?, ?, ?, ?)");
+                    $p->bind_param("isssss", $user_id, $dob, $gender, $blood_group, $address, $emergency_contact_phone);
                     $p->execute();
                     $p->close();
 
@@ -452,10 +454,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-map-marker-alt"></i> Address</label>
-                <div class="input-wrapper"><i class="fas fa-map-marker-alt"></i>
-                    <input type="text" name="address" placeholder="Street address, city">
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-tint"></i> Blood Group</label>
+                    <div class="input-wrapper"><i class="fas fa-tint"></i>
+                        <select name="blood_group">
+                            <option value="">Select blood group</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                    <div class="input-wrapper"><i class="fas fa-map-marker-alt"></i>
+                        <input type="text" name="address" placeholder="Street address, city">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone-square-alt"></i> Emergency Contact Number</label>
+                    <div class="input-wrapper"><i class="fas fa-phone"></i>
+                        <input type="tel" name="emergency_contact_phone" placeholder="+973 9876 5432" required>
+                    </div>
                 </div>
             </div>
             <div class="form-row">
@@ -655,8 +683,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <footer>
     <div class="footer-content">
         <p style="font-size:1.1rem; font-weight:600;">Valora Medical Center</p>
-        <p style="color:var(--n4); font-size:0.9rem;">University Project · All information is fictional</p>
-        <p class="footer-copy">&copy; 2026 Valora HMS. All rights reserved.</p>
+        <p style="color:var(--n4); font-size:0.9rem;">This is a university project for educational purposes; all hospital information & services is  fictional.</p>
+        <p class="footer-copy">&copy; 2026</p>
     </div>
 </footer>
 
