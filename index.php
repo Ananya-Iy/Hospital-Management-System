@@ -197,8 +197,8 @@
     <nav>
         <a href="index.php" class="logo">Valora</a>
         <ul class="nav-links">
-            <li><a href="login.php" class="btn btn-primary" style="padding:0.5rem 1.5rem;">Login</a></li>
-               <li><a href="login.php" class="btn btn-primary" style="padding:0.5rem 1.5rem;">signup</a></li>
+            <li><a href="pages/login.php" class="btn btn-primary" style="padding:0.5rem 1.5rem;">Login</a></li>
+               <li><a href="pages/signup.php" class="btn btn-primary" style="padding:0.5rem 1.5rem;">signup</a></li>
         </ul>
     </nav>
 </header>
