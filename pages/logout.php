@@ -118,7 +118,7 @@ session_destroy();
         Redirecting to home in <span class="countdown" id="countdown">5</span> seconds...
     </p>
 
-    <a href="index.php" class="btn primary">Home</a>
+    <a href="../index.php" class="btn primary">Home</a>
     <a href="login.php" class="btn secondary">Login Again</a>
 </div>
 
@@ -132,7 +132,7 @@ const timer = setInterval(() => {
 
     if (time <= 0) {
         clearInterval(timer);
-        window.location.href = 'index.php';
+        window.location.href = '../index.php';
     }
 }, 1000);
 </script>

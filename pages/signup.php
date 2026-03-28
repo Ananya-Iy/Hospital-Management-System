@@ -365,7 +365,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav>
         <a href="../index.php" class="logo">Valora</a>
         <ul class="nav-links">
-            <li><a href="index.php">Home</a></li>
+          <li><a href="../index.php">Home</a></li>
             <li><a href="login.php">Login</a></li>
             <li><a href="register.php" class="active">Sign Up</a></li>
         </ul>
