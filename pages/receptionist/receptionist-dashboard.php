@@ -323,7 +323,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (count($todays_appointments) > 0): ?>
             <table class="data-table">
                 <thead>
-                    <tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Specialization</th><th>Status</th><th>Actions</th></tr>
+                    <tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Specialization</th><th>Status</th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($todays_appointments as $apt): ?>
@@ -333,9 +333,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <td>Dr. <?php echo htmlspecialchars($apt['doctor_name']); ?></td>
                         <td><?php echo htmlspecialchars($apt['specialization']); ?></td>
                         <td><span class="badge b-<?php echo strtolower($apt['status']); ?>"><?php echo $apt['status']; ?></span></td>
-                        <td>
-                            <a href="checkin.php?apt_id=<?php echo $apt['id']; ?>" class="btn-sm btn-view"><i class="fas fa-sign-in-alt"></i> Check In</a>
-                        </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
